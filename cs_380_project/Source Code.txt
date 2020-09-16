@@ -1,0 +1,142 @@
+package cs_315_project1;
+
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+
+
+
+public class CS_CLASS_PROGRAM {
+	//Holds the students Variables into an array
+static JsonArray students = new JsonArray();
+//used to load the students infromation from the array
+//also allows the students to be saved to the array
+JsonObject student = new JsonObject();
+//saves the list of files in the directory to an array.
+static List<String> results = new ArrayList<String>();
+//holds the variable for the directory the files are located in
+static String fileDirectory = System.getProperty("user.home");
+//The array of Variables for the student average test score
+static int[] studentAvgScore= new int[20];
+//the array of Variables for the students average test score
+static int[] averageTestScore = new int[10];
+//holds the value of the overall class average test score
+static int ClassAvgTestScore = 0;
+//The variable that counts the number of students read in
+static int StudentCounter= 0;
+//This method Reads in the directory and counts the number of files inside the directory
+//Then grabs the student file and sends the string to the putStudentToArray method.
+
+public void getStudentsFromFile() throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+	//sets the file directory
+	fileDirectory += "/Desktop/cs_380_project1_student";
+	//gets the list of files for the directory
+	File[] files = new File(fileDirectory).listFiles();
+	//for each file in the directory
+	for (File file : files) {
+		//if the file is a file
+	    if (file.isFile()) {
+	    	//save the name of the file to the results
+	        results.add(file.getName());
+	        //add one student to the student counter
+	        StudentCounter++;
+	    }
+	}
+	//set number of students
+	studentAvgScore= new int[StudentCounter];
+	//for each file located in that directory
+	for(int q = 0;q<results.size();q++) {
+		//Load in the student information from that file
+		putStudentToArray("Student_"+q+".txt");
+	}
+	//calculates all test scores
+	calculateScores();
+};
+//this method takes the file string and loads the student information in a json format
+//then it saves the student information to the json Student Array
+public void putStudentToArray(String studentFile) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+	//resets the Student object
+	student = new JsonObject();
+	//loads the json parser object
+	JsonParser  parser = new JsonParser();
+	//loads in the data from the file. 
+	//parses the data into a object
+	Object obj = parser.parse(new FileReader((fileDirectory+"/"+studentFile)));
+	//save the loaded json parsed from the file into a json object
+	student = (JsonObject) obj;
+	//adds the student json object into the students json array
+	students.add(student);
+	
+}
+//this method calculates the following
+//the students average test score
+//the average score of each test
+//the overall average score of the entire class
+public void calculateScores() {
+	//the number of test in each students file
+	int testcounter =10;
+	//for c less then the number of students loaded in add 1 to c
+	for(int c = 0; c<students.size();c++) {
+		//reset the student json object
+		student = new JsonObject();
+		//get the student information from the json object array
+		student = (JsonObject) students.get(c);
+		//for d = 0 while d is less than the number of tests add 1 to d
+		for(int d = 0;d<testcounter;d++) {
+			//string that temporaly holds the value of each test score
+			String tempScore = "";
+			//loads the student test score from the json object
+			tempScore=student.get("Test_Score_"+d).getAsString();
+			//converts the test score string to an int value
+			int convertScore = Integer.valueOf(tempScore);
+			//saves the score to the corresponding student
+			studentAvgScore[c]+=convertScore;
+			//saves the score to the corresponding test
+			averageTestScore[d]+=convertScore;
+		}
+		//calculates the student grade
+		studentAvgScore[c]=studentAvgScore[c]/10;
+	}
+	//for f = 0 and f is less then 10 add 1 to f
+	for(int f = 0;f<10;f++) {
+		//calculates the average test score of each test
+		averageTestScore[f]=averageTestScore[f]/(StudentCounter);
+		//adds the test score to the class average score
+		ClassAvgTestScore+=averageTestScore[f];
+	}
+	//calcualtes the overall average test score
+	ClassAvgTestScore=ClassAvgTestScore/10;
+	//prints out each students average test score to the console
+	for(int g = 0;g<20;g++) {
+		System.out.println("Student_"+g+":"+studentAvgScore[g]);
+	}
+	//prints out each test score average to the console
+	for(int h = 0;h<10;h++) {
+		System.out.println("Test_"+h+":"+averageTestScore[h]);
+	}
+	//prints out the class average test score to the console
+	System.out.println("Class Average: "+ClassAvgTestScore);
+}
+//the main method of the program
+	public static void main(String[] args) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+		//creates an object of the CS_CLASS_PROGRAM
+		CS_CLASS_PROGRAM object = new CS_CLASS_PROGRAM();
+		//runs the method getStudentsfromfile
+		object.getStudentsFromFile();
+		
+		
+	}
+	
+	
+	
+}
